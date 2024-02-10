@@ -9,21 +9,6 @@ Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog.
 
 Before running bluexport.sh, first you must configure file bluexscrt with your IBM Cloud Data.
 Replace all < TEXT > with your data.
-
-
-bluexscrt example:
-```
-APYKEY blaBLAblaBLA  
-POWERVSDR crn:v1:bluemix:public:power-iaas:blablablablabla::  
-POWERVSPRD crn:v1:bluemix:public:power-iaas:blablablablabla::  
-ACCESSKEY blaBLAblaBLA  
-SECRETKEY blaBLAblaBLAbla  
-BUCKETNAME mybucket  
-REGION eu-de  
-  
-SERVER1 192.168.111.111  
-SERVER2 192.168.111.112  
-```
   
 Content of file bluexscrt before edit:  
 
@@ -43,5 +28,20 @@ SERVER3 XXX.XXX.XXX.XXX
 .  
 SERVERN XXX.XXX.XXX.XXX  
 ```
+
+bluexscrt example:
+```
+APYKEY blaBLAblaBLA  
+POWERVSDR crn:v1:bluemix:public:power-iaas:blablablablabla::  
+POWERVSPRD crn:v1:bluemix:public:power-iaas:blablablablabla::  
+ACCESSKEY blaBLAblaBLA  
+SECRETKEY blaBLAblaBLAbla  
+BUCKETNAME mybucket  
+REGION eu-de  
+  
+SERVER1 192.168.111.111  
+SERVER2 192.168.111.112  
+```
+
 #
   <sub>Ricardo Martins - [Blue Chip Portugal](http://www.bluechip.pt) © 2024</sub>  
