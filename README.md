@@ -7,7 +7,7 @@
 
  Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog
 
- Ricardo Martins - printf '\e]8;;http://www.bluechip.pt\e\\Blue Chip Portugal\e]8;;\e\\\n' © 2024
+ Ricardo Martins - [Blue Chip Portugal](http://www.bluechip.pt) © 2024
 #####################################################################################
 
 Before running bluexport.sh, first you must configure file bluexscrt with your IBM Cloud Data
