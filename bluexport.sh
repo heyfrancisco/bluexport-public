@@ -7,7 +7,7 @@
 #
 # Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog
 # Ricardo Martins - Blue Chip Portugal © 2024
-######################################################################################
+#######################################################################################
 
        #####  START:CODE  #####
 
