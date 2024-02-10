@@ -1,15 +1,15 @@
 # bluexport
 Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog.
 #
- Usage:    ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | monthly | single]
+ Usage:    <h6>./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | monthly | single]</h6>
 
- Example:  ./bluexport.sh -a namdr namdr_img image-catalog daily ---- Excludes Volumes with ASP2_ in the name and exports to image catalog.
- Example:  ./bluexport.sh -x ASP2_ namdr namdr_img both monthly    ---- Includes all Volumes and exports to COS and image catalog.
+ Examples:  <h6>./bluexport.sh -a namdr namdr_img image-catalog daily  *---- Excludes Volumes with ASP2_ in the name and exports to image catalog.*</h6>
+   <h6>./bluexport.sh -x ASP2_ namdr namdr_img both monthly  ---- Includes all Volumes and exports to COS and image catalog.</h6>
+
 #
-
 Before running bluexport.sh, first you must configure file bluexscrt with your IBM Cloud Data.
 Replace all < TEXT > with your data.
-  
+
 Content of file bluexscrt before edit:  
 
 ```
