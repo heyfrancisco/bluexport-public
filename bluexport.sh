@@ -12,7 +12,7 @@
        #####  START:CODE  #####
 
 ####  START: Constants Definition  #####
-Version="1.6.1.1"
+Version="1.6.1.2"
 bluexscrt="$HOME/bluexscrt"
 log_file="$HOME/bluexport.log"
 capture_time=`date +%Y-%m-%d_%H%M`
@@ -351,7 +351,7 @@ case $1 in
     ;;
 
    -v)
-	echo "      ### bluexport by RQM - Blue Chip © 2023 ###"
+	echo "      ### bluexport by RQM - Blue Chip © 2024 ###"
 	echo "      ###            Version: $Version             ###"
 	exit 0
     ;;
