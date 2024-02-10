@@ -11,7 +11,7 @@
 #####################################################################################
 
 Before running bluexport.sh, first you must configure file bluexscrt with your IBM Cloud Data
-Replace all <TEXT> with your data.
+Replace all < TEXT > with your data.
 
 bluexscrt example:
 
