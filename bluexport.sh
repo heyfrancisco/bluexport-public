@@ -351,9 +351,9 @@ case $1 in
 	volumes_cmd="/usr/local/bin/ibmcloud pi inlv $vsi | grep -v "$exclude_name" | tail -n +2"
     ;;
 
-   -v)
-	echo "      ### bluexport by RQM - Blue Chip © 2024 ###"
-	echo "      ###            Version: $Version             ###"
+   -v | --version)
+	echo "  ###  bluexport by RQM - Blue Chip © 2024"
+	echo "  ### Version: $Version"
 	exit 0
     ;;
 
