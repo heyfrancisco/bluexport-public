@@ -43,6 +43,5 @@ SERVER3 XXX.XXX.XXX.XXX
 .  
 SERVERN XXX.XXX.XXX.XXX  
 ```
-
 #
   <sub>Ricardo Martins - [Blue Chip Portugal](http://www.bluechip.pt) © 2024</sub>  
