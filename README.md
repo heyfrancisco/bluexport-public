@@ -6,7 +6,7 @@ Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog.
  Examples:  <h6>./bluexport.sh -a namdr namdr_img image-catalog daily  *---- Excludes Volumes with ASP2_ in the name and exports to image catalog.*</h6>
    <h6>./bluexport.sh -x ASP2_ namdr namdr_img both monthly  ---- Includes all Volumes and exports to COS and image catalog.</h6>
 
- *This file is to be ran in crontab or in background, it will not have many or none output to screen, it will log in a file.*
+ *This file is to be run in crontab or in background, it will not have many or none output to screen, it will log in a file.*
 #
 Before running bluexport.sh, first you must configure the file <U>bluexscrt</U> with your IBM Cloud Data. Replace all <> with your data.
 
