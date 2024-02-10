@@ -352,7 +352,7 @@ case $1 in
     ;;
 
    -v | --version)
-	echo "  ### bluexport by RQM - Blue Chip © 2024"
+	echo "  ### bluexport by RQM - Blue Chip © 2023-2024"
 	echo "  ### Version: $Version"
 	exit 0
     ;;
