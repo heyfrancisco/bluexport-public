@@ -7,8 +7,7 @@ Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog.
    <h6>./bluexport.sh -x ASP2_ namdr namdr_img both monthly  ---- Includes all Volumes and exports to COS and image catalog.</h6>
 
 #
-Before running bluexport.sh, first you must configure file bluexscrt with your IBM Cloud Data.
-Replace all < TEXT > with your data.
+Before running bluexport.sh, first you must configure the file <U>bluexscrt</U> with your IBM Cloud Data. Replace all <> with your data.
 
 Content of file bluexscrt before edit:  
 
