@@ -13,7 +13,7 @@
        #####  START:CODE  #####
 
 ####  START: Constants Definition  #####
-Version=1.6.4-29-ged4ed8a
+Version=1.7.0
 bluexscrt="$HOME/bluexscrt"
 log_file="$HOME/bluexport.log"
 capture_time=`date +%Y-%m-%d_%H%M`
@@ -66,23 +66,23 @@ abort() {
 
 #### START:FUNCTION - Check if image-catalog as images from last saturday and deleted it ####
 delete_previous_img() {
-	img_id_old=$(/usr/local/bin/ibmcloud pi imgs --long | grep $vsi | grep $old_img | awk {'print $1'})
-	img_name_old=$(/usr/local/bin/ibmcloud pi imgs --long | grep $vsi | grep $old_img | awk {'print $2'})
+	img_id_old=$(/usr/local/bin/ibmcloud pi img ls --long | grep $vsi | grep $old_img | awk {'print $1'})
+	img_name_old=$(/usr/local/bin/ibmcloud pi img ls --long | grep $vsi | grep $old_img | awk {'print $2'})
 	if [ ! $img_id_old ]
 	then
 		echo "There is no Image from $old_img - Nothing to delete." >> $log_file
 	else
 		echo "== Deleting image name $img_name_old - image ID $img_id_old - from day $old_img... ==" >> $log_file
-		sh -c '/usr/local/bin/ibmcloud pi imgd '$img_id_old 2>> $log_file
+		sh -c '/usr/local/bin/ibmcloud pi img del '$img_id_old 2>> $log_file
 	fi
 }
 #### END:FUNCTION - Check if image-catalog as images from last saturday and deleted it ####
 
 ####  START:FUNCTION - Target DC and List all VSI in the POWERVS DC and Get VSI Name and ID  ####
 dc_vsi_list() {
-	sh -c '/usr/local/bin/ibmcloud pi st '$1 2>> $log_file
+	sh -c '/usr/local/bin/ibmcloud pi ws tg '$1 2>> $log_file
     # List all VSI in this POWERVS DC and Get VSI Name and ID #
-	sh -c '/usr/local/bin/ibmcloud pi ins | awk {'\''print $1" "$2'\''} | tail -n +2' > $vsi_list_id_tmp 2>> $log_file
+	sh -c '/usr/local/bin/ibmcloud pi ins ls | awk {'\''print $1" "$2'\''} | tail -n +2' > $vsi_list_id_tmp 2>> $log_file
 	vsi_id=$(cat $vsi_list_id_tmp | grep $vsi | awk {'print $1'})
 	cat $vsi_list_id_tmp | awk {'print $2'} > $vsi_list_tmp
 }
@@ -94,7 +94,7 @@ job_monitor() {
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Job log in file $job_log" >> $log_file
 	if [ $flagj -eq 1 ]
 	then
-		job=$(sh -c '/usr/local/bin/ibmcloud pi jobs | grep -B7 '$capture_name' | grep "Job ID" | awk {'\''print $3'\''}' 2>> $log_file)
+		job=$(sh -c '/usr/local/bin/ibmcloud pi job ls | grep -B7 '$capture_name' | grep "Job ID" | awk {'\''print $3'\''}' 2>> $log_file)
 	else
 		job=$(cat $job_id | grep "Job ID " | awk {'print $3'})
 	fi
@@ -102,7 +102,7 @@ job_monitor() {
 	echo "Job Monitoring of VM Capture "$capture_name" - Job ID:" $job >> $job_log
 	while true
 	do
-		sh -c '/usr/local/bin/ibmcloud pi job '$job 1> $job_monitor 2>>$job_log
+		sh -c '/usr/local/bin/ibmcloud pi job get '$job 1> $job_monitor 2>>$job_log
 		job_status=$(cat $job_monitor | grep "State " | awk {'print $2'})
 		message=$(cat $job_monitor |grep "Message" | cut -f 2- -d ' ')
 		operation=$(cat $job_monitor |grep "Message" | cut -f 2- -d ' '| sed 's/::/ /g' | awk {'print $3'})
@@ -288,6 +288,7 @@ case $1 in
 		test=0
 	fi
 	vsi=${2^^}
+	vsi_id=`cat $bluexscrt | grep $vsi | awk {'print $3'}`
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Starting Capture&Export for VSI Name: $vsi ..." >> $log_file
 	capture_img_name=${3^^}
 	capture_name=$capture_img_name"_"$capture_time
@@ -300,7 +301,7 @@ case $1 in
 	else
 		abort "`date +%Y-%m-%d_%H:%M:%S` - Export Destination $destination is NOT valid!"
 	fi
-	volumes_cmd="/usr/local/bin/ibmcloud pi inlv $vsi | tail -n +2"
+	volumes_cmd="/usr/local/bin/ibmcloud pi ins vol ls $vsi_id | tail -n +2"
     ;;
 
    -x | -tx)
@@ -348,7 +349,7 @@ case $1 in
 	else
 		abort "`date +%Y-%m-%d_%H:%M:%S` - Export Destination $destination is NOT valid!"
 	fi
-	volumes_cmd="/usr/local/bin/ibmcloud pi inlv $vsi | grep -v "$exclude_name" | tail -n +2"
+	volumes_cmd="/usr/local/bin/ibmcloud pi ins vol ls $vsi_id | grep -v "$exclude_name" | tail -n +2"
     ;;
 
    -v | --version)
@@ -399,19 +400,19 @@ then
 	echo "`date +%Y-%m-%d_%H:%M:%S` - == Executing Capture and Export Cloud command... ==" >> $log_file
 	if [ $test -eq 1 ]
 	then
-		echo "/usr/local/bin/ibmcloud pi incap $vsi_id --destination $destination --name $capture_name --volumes \"$volumes\" --job" >> $log_file
+		echo "/usr/local/bin/ibmcloud pi ins cap cr $vsi_id --destination $destination --name $capture_name --volumes \"$volumes\"" >> $log_file
 	else
 		rm $job_id
-		/usr/local/bin/ibmcloud pi incap $vsi_id --destination $destination --name $capture_name --volumes "$volumes" --job 2>> $log_file | tee -a $log_file $job_id
+		/usr/local/bin/ibmcloud pi ins cap cr $vsi_id --destination $destination --name $capture_name --volumes "$volumes" 2>> $log_file | tee -a $log_file $job_id
 	fi
 else
 	echo "`date +%Y-%m-%d_%H:%M:%S` - == Executing Capture and Export Cloud command... ==" >> $log_file
 	if [ $test -eq 1 ]
 	then
-		echo "/usr/local/bin/ibmcloud pi incap $vsi_id --destination $destination --name $capture_name --volumes \"$volumes\" --access-key $accesskey --secret-key $secretkey --region $region --image-path $bucket --job" >> $log_file
+		echo "/usr/local/bin/ibmcloud pi ins cap cr $vsi_id --destination $destination --name $capture_name --volumes \"$volumes\" --access-key $accesskey --secret-key $secretkey --region $region --image-path $bucket" >> $log_file
 	else
 		rm $job_id
-		/usr/local/bin/ibmcloud pi incap $vsi_id --destination $destination --name $capture_name --volumes "$volumes" --access-key $accesskey --secret-key $secretkey --region $region --image-path $bucket --job 2>> $log_file | tee -a $log_file $job_id
+		/usr/local/bin/ibmcloud pi ins cap cr $vsi_id --destination $destination --name $capture_name --volumes "$volumes" --access-key $accesskey --secret-key $secretkey --region $region --image-path $bucket 2>> $log_file | tee -a $log_file $job_id
 	fi
 fi
 ####  END: Make the Capture and Export  ####
