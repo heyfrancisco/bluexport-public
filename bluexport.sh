@@ -2,8 +2,8 @@
 #
 # Usage:    ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | monthly | single]
 #
-# Example:  ./bluexport.sh -a namdr namdr_img image-catalog daily ---- Excludes Volumes with ASP2_ in the name and exports to image catalog
-# Example:  ./bluexport.sh -x ASP2_ namdr namdr_img both monthly    ---- Includes all Volumes and exports to COS and image catalog
+# Example:  ./bluexport.sh -a namdr namdr_img image-catalog daily ---- Includes all Volumes and exports to COS and image catalog
+# Example:  ./bluexport.sh -x ASP2_ namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS
 #
 # Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog
 #
@@ -13,7 +13,7 @@
        #####  START:CODE  #####
 
 ####  START: Constants Definition  #####
-Version=1.7.0
+Version=1.8.0
 bluexscrt="$HOME/bluexscrt"
 log_file="$HOME/bluexport.log"
 capture_time=`date +%Y-%m-%d_%H%M`
@@ -48,9 +48,13 @@ accesskey=$(cat $bluexscrt | grep "ACCESSKEY" | awk {'print $2'})
 secretkey=$(cat $bluexscrt | grep "SECRETKEY" | awk {'print $2'})
 bucket=$(cat $bluexscrt | grep "BUCKETNAME" | awk {'print $2'})
 apikey=$(cat $bluexscrt | grep "APYKEY" | awk {'print $2'})
-powervsdcdr=$(cat $bluexscrt | grep "POWERVSDR" | awk {'print $2'})
-powervsdcprd=$(cat $bluexscrt | grep "POWERVSPRD" | awk {'print $2'})
+WSFRADR=$(cat $bluexscrt | grep "WSFRADR" | awk {'print $2'})
+WSFRAPRD=$(cat $bluexscrt | grep "WSFRAPRD" | awk {'print $2'})
+WSMADDR=`cat $bluexscrt | grep "WSMADDR" | awk {'print $2'}`
+WSMADPRD=`cat $bluexscrt | grep "WSMADPRD" | awk {'print $2'}`
 region=$(cat $bluexscrt | grep "REGION" | awk {'print $2'})
+allws=$(grep '^ALLWS' $bluexscrt | cut -d' ' -f2-)
+wsnames=$(grep '^WSNAMES' $bluexscrt | cut -d' ' -f2-)
 ####  END: Get Cloud Config Data  #####
 
        #####  START: FUNCTIONS  #####
@@ -163,63 +167,73 @@ cloud_login() {
 get_IASP_name() {
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Getting $vsi IASP Name..." >> $log_file
 	vsi_ip=$(cat $bluexscrt | grep $vsi | awk {'print $2'})
-	if ping -c1 -w3 $vsi_ip &> /dev/null
-	then
-		echo "`date +%Y-%m-%d_%H:%M:%S` - Ping VSI $vsi OK." >> $log_file
-	else
-		abort "`date +%Y-%m-%d_%H:%M:%S` - Cannot ping VSI $vsi ! Aborting..."
-	fi
-	ssh -q qsecofr@$vsi_ip exit
-	if [ $? -eq 255 ]
-	then
-		abort "`date +%Y-%m-%d_%H:%M:%S` - Unable to SSH to $vsi and not able to get IASP status! Try STRTCPSVR *SSHD on the $vsi VSI. Aborting..."
-	else
-		iasp_name=$(ssh qsecofr@$vsi_ip 'ls -l / | grep " IASP"' | awk {'print $9'})
-		if [[ $iasp_name == "" ]]
-		then
-			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't have IASP or it is Varied OFF" >> $log_file
-		else
-			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi IASP Name: $iasp_name" >> $log_file
-		fi
-	fi
+#	if ping -c1 -w3 $vsi_ip &> /dev/null
+#	then
+#		echo "`date +%Y-%m-%d_%H:%M:%S` - Ping VSI $vsi OK." >> $log_file
+#	else
+#		abort "`date +%Y-%m-%d_%H:%M:%S` - Cannot ping VSI $vsi ! Aborting..."
+#	fi
+#	ssh -q qsecofr@$vsi_ip exit
+#	if [ $? -eq 255 ]
+#	then
+#		abort "`date +%Y-%m-%d_%H:%M:%S` - Unable to SSH to $vsi and not able to get IASP status! Try STRTCPSVR *SSHD on the $vsi VSI. Aborting..."
+#	else
+#		iasp_name=$(ssh qsecofr@$vsi_ip 'ls -l / | grep " IASP"' | awk {'print $9'})
+#		if [[ $iasp_name == "" ]]
+#		then
+#			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't have IASP or it is Varied OFF" >> $log_file
+#		else
+#			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi IASP Name: $iasp_name" >> $log_file
+#		fi
+#	fi
 }
 ####  END:FUNCTION - Get IASP name  ####
 
 ####  START:FUNCTION - Check if VSI exists and Get VSI IP and IASP NAME if exists  ####
 check_VSI_exists() {
 	echo "" > $job_log
-   ## Target PRD DC ##
-	echo "`date +%Y-%m-%d_%H:%M:%S` - Searching for VSI in PRD DC..." >> $log_file
-	dc_vsi_list $powervsdcprd
-	if_ctl=0
-	if grep -qe ^$vsi$ $vsi_list_tmp
-	then
-		echo "`date +%Y-%m-%d_%H:%M:%S` - VSI to Capture: $vsi" >> $log_file
-		if [ $flagj -eq 0 ]
-		then
-		get_IASP_name
-		fi
-		if_ctl=1
-	elif [ $if_ctl -eq  0 ]
-	then
-		echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't exist in PRD DC!" >> $log_file
-		echo "`date +%Y-%m-%d_%H:%M:%S` - Searching for VSI in DR DC..." >> $log_file
-   ## Target DR DC ##
-		dc_vsi_list $powervsdcdr
+
+	# Convert 'wsnames' string to an array
+	IFS=':' read -r -a wsnames_array <<< "$wsnames"
+
+	# Convert 'allws' string to an array
+	read -r -a allws_array <<< "$allws"
+
+	# Initialize an associative array to map workspace abbreviations to full names
+	declare -A wsmap
+	# Populate the wsmap with dynamic values from allws and wsnames_array
+	for i in "${!allws_array[@]}"; do
+		wsmap[${allws_array[i]}]="${wsnames_array[i]}"
+	done
+
+	found=0
+	for ws in "${allws_array[@]}"
+	do
+		shortnamecrn="${!ws}"
+		full_ws_name="${wsmap[$ws]}" # Get the full workspace name from the map
+		echo "`date +%Y-%m-%d_%H:%M:%S` - Searching for VSI in $full_ws_name..." >> $log_file
+		dc_vsi_list "$shortnamecrn"
+	#	if_ctl=0
 		if grep -qe ^$vsi$ $vsi_list_tmp
 		then
-		echo "`date +%Y-%m-%d_%H:%M:%S` - VSI to Capture: $vsi" >> $log_file
+			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi was found in $full_ws_name..." >> $log_file
+			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI to Capture: $vsi" >> $log_file
 			if [ $flagj -eq 0 ]
 			then
 				get_IASP_name
 			fi
-		if_ctl=1
+		#	if_ctl=1
+			found=1
+			break
+		else
+			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't exist in $full_ws_name!" >> $log_file
 		fi
-	fi
-	if [ "$if_ctl" -eq  0 ]
+	done
+	if [ "$found" -eq 0 ]
 	then
-        	abort "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't exist!"
+		abort "$(date +%Y-%m-%d_%H:%M:%S) - VSI $vsi doesn't exist in any checked workspace!"
 	fi
+exit 0
 }
 ####  END:FUNCTION - Check if VSI exists and Get VSI IP and IASP NAME if exists  ####
 
@@ -337,6 +351,7 @@ case $1 in
 	exclude_name=$2
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes Name to exclude: $exclude_name" >> $log_file
 	vsi=${3^^}
+	vsi_id=`cat $bluexscrt | grep $vsi | awk {'print $3'}`
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Starting Capture&Export for VSI Name: $vsi ..." >> $log_file
 	capture_img_name=${4^^}
 	capture_name=$capture_img_name"_"$capture_time
@@ -369,29 +384,29 @@ check_VSI_exists
 
 ####  START: Get Volumes to capture  ####
 eval $volumes_cmd > $volumes_file
-volumes=$(cat $volumes_file | awk {'print $1'} | tr '\n' ' ')
+volumes=$(cat $volumes_file | awk {'print $1'} | tr '\n' ',' | sed 's/,$//')
 volumes_name=$(cat $volumes_file | awk {'print $2'} | tr '\n' ' ')
 echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes ID Captured: $volumes" >> $log_file
 echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes Name Captured: $volumes_name" >> $log_file
 ####  END: Get Volumes to capture  ####
 
 ####  START: Flush ASPs and IASP Memory to Disk  ####
-if [ $test -eq 0 ]
-then
-	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
-	ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)"' >> $log_file
-	if [[ $iasp_name != "" ]]
-	then
-		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
-		ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV('$iasp_name') OPTION(*FRCWRT)"' >> $log_file
-	fi
-else
-	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
-	if [[ $iasp_name != "" ]]
-	then
-		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
-	fi
-fi
+#if [ $test -eq 0 ]
+#then
+#	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
+#	ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)"' >> $log_file
+#	if [[ $iasp_name != "" ]]
+#	then
+#		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
+#		ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV('$iasp_name') OPTION(*FRCWRT)"' >> $log_file
+#	fi
+#else
+#	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
+#	if [[ $iasp_name != "" ]]
+#	then
+#		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
+#	fi
+#fi
 ####  END: Flush ASPs and IASP Memory to Disk  ####
 
 ####  START: Make the Capture and Export  ####
