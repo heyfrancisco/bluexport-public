@@ -8,7 +8,7 @@
 #
 # Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog
 #
-# Ricardo Martins - Blue Chip Portugal © 2024
+# Ricardo Martins - Blue Chip Portugal © 2023-2024
 #######################################################################################
 
        #####  START:CODE  #####
@@ -74,7 +74,7 @@ help() {
 	echo "Flag t before a or x makes it a test and do not makes the capture"
 	echo "Example:  ./bluexport.sh -tx ASP2_ namdr namdr_img both monthly ---- Do not makes the export"
 	echo ""
-	echo "Ricardo Martins - Blue Chip Portugal © 2024"
+	echo "Ricardo Martins - Blue Chip Portugal © 2023-2024"
 	echo ""
 }
 #### END:FUNCTION - Help  ####
