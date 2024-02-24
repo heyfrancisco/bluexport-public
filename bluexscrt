@@ -12,3 +12,6 @@ SERVER3 XXX.XXX.XXX.XXX
 .
 .
 SERVERN XXX.XXX.XXX.XXX
+
+ALLWS POWERVSDR POWERVSPRD
+WSNAMES <Power VS Workspace Name:Power VS Workspace Name:Power VS Workspace Name>
