@@ -50,17 +50,14 @@ secretkey=$(cat $bluexscrt | grep "SECRETKEY" | awk {'print $2'})
 bucket=$(cat $bluexscrt | grep "BUCKETNAME" | awk {'print $2'})
 apikey=$(cat $bluexscrt | grep "APYKEY" | awk {'print $2'})
 
-  # Read the ALLWS line from bluexscrt file and create an array of workspace names
-read -r -a workspaces <<< $(grep "^ALLWS" "$bluexscrt" | cut -d ' ' -f2-)
-  # Loop through the array of workspace names
-for ws in "${workspaces[@]}"; do
-      # For each workspace, find its corresponding CRN
-    crn=$(grep "^$ws " "$bluexscrt" | awk '{print $2}')
-
-      # Dynamically create a variable with the name of the workspace
-      # and assign the CRN as its value
-    declare "$ws=$crn"
+   ### START: Dynamically create a variable with the name of the workspace ###
+read -r -a workspaces <<< $(grep "^ALLWS" "$bluexscrt" | cut -d ' ' -f2-) # Read the ALLWS line from bluexscrt file and create an array of workspace names
+for ws in "${workspaces[@]}" # Loop through the array of workspace names
+do
+    crn=$(grep "^$ws " "$bluexscrt" | awk '{print $2}') # For each workspace, find its corresponding CRN
+    declare "$ws=$crn" # Dynamically create a variable with the name of the workspace and assign the CRN as its value
 done
+   ### END: Dynamically create a variable with the name of the workspace ###
 
 region=$(cat $bluexscrt | grep "REGION" | awk {'print $2'})
 allws=$(grep '^ALLWS' $bluexscrt | cut -d' ' -f2-)
