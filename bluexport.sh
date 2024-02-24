@@ -4,6 +4,7 @@
 #
 # Example:  ./bluexport.sh -a namdr namdr_img image-catalog daily ---- Includes all Volumes and exports to COS and image catalog
 # Example:  ./bluexport.sh -x ASP2_ namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS
+# Example:  ./bluexport.sh -x "ASP2_ IASPNA" namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ and IASPNA in the name and exports to image catalog and COS
 #
 # Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog
 #
@@ -13,7 +14,7 @@
        #####  START:CODE  #####
 
 ####  START: Constants Definition  #####
-Version=1.8.0
+Version=1.9.0
 bluexscrt="$HOME/bluexscrt"
 log_file="$HOME/bluexport.log"
 capture_time=`date +%Y-%m-%d_%H%M`
@@ -58,6 +59,25 @@ wsnames=$(grep '^WSNAMES' $bluexscrt | cut -d' ' -f2-)
 ####  END: Get Cloud Config Data  #####
 
        #####  START: FUNCTIONS  #####
+
+#### START:FUNCTION - Help  ####
+help() {
+	echo ""
+	echo "Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog"
+	echo ""
+	echo "Usage: ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | monthly | single]"
+	echo ""
+	echo "Example:  ./bluexport.sh -a namdr namdr_img image-catalog daily ---- Includes all Volumes and exports to COS and image catalog"
+	echo "Example:  ./bluexport.sh -x ASP2_ namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS"
+	echo "Example:  ./bluexport.sh -x ""ASP2_ IASPNA"" namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ and IASPNA in the name and exports to image catalog and COS"
+	echo ""
+	echo "Flag t before a or x makes it a test and do not makes the capture"
+	echo "Example:  ./bluexport.sh -tx ASP2_ namdr namdr_img both monthly ---- Do not makes the export"
+	echo ""
+	echo "Ricardo Martins - Blue Chip Portugal © 2024"
+	echo ""
+}
+#### END:FUNCTION - Help  ####
 
 #### START:FUNCTION - Finish log file when aborting  ####
 abort() {
@@ -213,7 +233,6 @@ check_VSI_exists() {
 		full_ws_name="${wsmap[$ws]}" # Get the full workspace name from the map
 		echo "`date +%Y-%m-%d_%H:%M:%S` - Searching for VSI in $full_ws_name..." >> $log_file
 		dc_vsi_list "$shortnamecrn"
-	#	if_ctl=0
 		if grep -qe ^$vsi$ $vsi_list_tmp
 		then
 			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi was found in $full_ws_name..." >> $log_file
@@ -222,18 +241,16 @@ check_VSI_exists() {
 			then
 				get_IASP_name
 			fi
-		#	if_ctl=1
 			found=1
 			break
 		else
-			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't exist in $full_ws_name!" >> $log_file
+			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi not found in $full_ws_name!" >> $log_file
 		fi
 	done
 	if [ "$found" -eq 0 ]
 	then
-		abort "$(date +%Y-%m-%d_%H:%M:%S) - VSI $vsi doesn't exist in any checked workspace!"
+		abort "$(date +%Y-%m-%d_%H:%M:%S) - VSI $vsi not found in any of the workspaces available in bluexscrt file!"
 	fi
-exit 0
 }
 ####  END:FUNCTION - Check if VSI exists and Get VSI IP and IASP NAME if exists  ####
 
@@ -245,10 +262,15 @@ echo "==== START ======= $timestamp =========" >> $log_file
 
 if [ $# -eq 0 ]
 then
+	help
 	abort "`date +%Y-%m-%d_%H:%M:%S` - No arguments supplied!!"
 fi
 
 case $1 in
+   --help)
+	help
+	exit 0
+    ;;
 
    -j)
 	if [ $# -lt 3 ]
@@ -348,8 +370,13 @@ case $1 in
 	else
 		test=0
 	fi
-	exclude_name=$2
-	echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes Name to exclude: $exclude_name" >> $log_file
+	IFS=' ' read -r -a exclude_names <<< "$2"
+	exclude_grep_opts=""
+	for name in "${exclude_names[@]}"
+	do
+		exclude_grep_opts+=" | grep -v $name"
+	done
+	echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes Name to exclude: ${exclude_names[*]}" >> $log_file
 	vsi=${3^^}
 	vsi_id=`cat $bluexscrt | grep $vsi | awk {'print $3'}`
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Starting Capture&Export for VSI Name: $vsi ..." >> $log_file
@@ -364,7 +391,7 @@ case $1 in
 	else
 		abort "`date +%Y-%m-%d_%H:%M:%S` - Export Destination $destination is NOT valid!"
 	fi
-	volumes_cmd="/usr/local/bin/ibmcloud pi ins vol ls $vsi_id | grep -v "$exclude_name" | tail -n +2"
+	volumes_cmd="/usr/local/bin/ibmcloud pi ins vol ls $vsi_id $exclude_grep_opts | tail -n +2"
     ;;
 
    -v | --version)
@@ -374,6 +401,7 @@ case $1 in
     ;;
 
     *)
+	help
 	abort "`date +%Y-%m-%d_%H:%M:%S` - Flag -a or -x Missing or invalid Flag!"
     ;;
 esac
