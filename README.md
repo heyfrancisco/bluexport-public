@@ -33,8 +33,8 @@ SERVER3 XXX.XXX.XXX.XXX <SERVER3_VSI_ID>
 .  
 SERVERN XXX.XXX.XXX.XXX <SERVERN_VSI_ID>
 
-ALLWS POWERVSDR POWERVSPRD
-WSNAMES <Power VS Workspace Name:Power VS Workspace Name:Power VS Workspace Name>
+ALLWS POWERVSDR POWERVSPRD                                                         - This line...
+WSNAMES <Power VS Workspace Name:Power VS Workspace Name:Power VS Workspace Name>  - ...and this line must be in the same order
 ```
 
 bluexscrt example:
