@@ -32,13 +32,17 @@ SERVER3 XXX.XXX.XXX.XXX <SERVER3_VSI_ID>
 .  
 .  
 SERVERN XXX.XXX.XXX.XXX <SERVERN_VSI_ID>
+
+ALLWS POWERVSDR POWERVSPRD
+WSNAMES <Power VS Workspace Name:Power VS Workspace Name:Power VS Workspace Name>
 ```
 
 bluexscrt example:
 ```
 APYKEY blaBLAblaBLA  
-POWERVSDR crn:v1:bluemix:public:power-iaas:blablablablabla::  
-POWERVSPRD crn:v1:bluemix:public:power-iaas:blablablablabla::  
+WSMADDR crn:v1:bluemix:public:power-iaas:blablablablabla::  
+WSMADPRD crn:v1:bluemix:public:power-iaas:blablablablabla::
+WSFRADR crn:v1:bluemix:public:power-iaas:blablablablabla::
 ACCESSKEY blaBLAblaBLA  
 SECRETKEY blaBLAblaBLAbla  
 BUCKETNAME mybucket  
@@ -46,6 +50,9 @@ REGION eu-de
   
 SERVER1 192.168.111.111 abcdefgh-1234-1a2b-1234-abc123def123
 SERVER2 192.168.111.112 abcdefgh-1234-1a2b-1234-abc123def123
+
+ALLWS WSMADDR WSMADPRD WSFRADR
+WSNAMES Power VS Workspace Mad DR:Power VS Workspace Mad PRD:Power VS Workspace Fra DR
 ```
 
 #
