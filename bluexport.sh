@@ -94,7 +94,7 @@ abort() {
 }
 #### END:FUNCTION - Finish log file when aborting  ####
 
-#### START:FUNCTION - Check if image-catalog as images from last saturday and deleted it ####
+#### START:FUNCTION - Check if image-catalog has images from last time and deleted it ####
 delete_previous_img() {
 	img_id_old=$(/usr/local/bin/ibmcloud pi img ls --long | grep $vsi | grep $old_img | awk {'print $1'})
 	img_name_old=$(/usr/local/bin/ibmcloud pi img ls --long | grep $vsi | grep $old_img | awk {'print $2'})
@@ -191,27 +191,32 @@ cloud_login() {
 
 ####  START:FUNCTION - Get IASP name  ####
 get_IASP_name() {
-	echo "`date +%Y-%m-%d_%H:%M:%S` - Getting $vsi IASP Name..." >> $log_file
-	vsi_ip=$(cat $bluexscrt | grep $vsi | awk {'print $2'})
-#	if ping -c1 -w3 $vsi_ip &> /dev/null
-#	then
-#		echo "`date +%Y-%m-%d_%H:%M:%S` - Ping VSI $vsi OK." >> $log_file
-#	else
-#		abort "`date +%Y-%m-%d_%H:%M:%S` - Cannot ping VSI $vsi ! Aborting..."
-#	fi
-#	ssh -q qsecofr@$vsi_ip exit
-#	if [ $? -eq 255 ]
-#	then
-#		abort "`date +%Y-%m-%d_%H:%M:%S` - Unable to SSH to $vsi and not able to get IASP status! Try STRTCPSVR *SSHD on the $vsi VSI. Aborting..."
-#	else
-#		iasp_name=$(ssh qsecofr@$vsi_ip 'ls -l / | grep " IASP"' | awk {'print $9'})
-#		if [[ $iasp_name == "" ]]
-#		then
-#			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't have IASP or it is Varied OFF" >> $log_file
-#		else
-#			echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi IASP Name: $iasp_name" >> $log_file
-#		fi
-#	fi
+	if [ $test -eq 0 ]
+	then
+		echo "`date +%Y-%m-%d_%H:%M:%S` - Getting $vsi IASP Name..." >> $log_file
+		vsi_ip=$(cat $bluexscrt | grep $vsi | awk {'print $2'})
+		if ping -c1 -w3 $vsi_ip &> /dev/null
+		then
+			echo "`date +%Y-%m-%d_%H:%M:%S` - Ping VSI $vsi OK." >> $log_file
+		else
+			abort "`date +%Y-%m-%d_%H:%M:%S` - Cannot ping VSI $vsi ! Aborting..."
+		fi
+		ssh -q qsecofr@$vsi_ip exit
+		if [ $? -eq 255 ]
+		then
+			abort "`date +%Y-%m-%d_%H:%M:%S` - Unable to SSH to $vsi and not able to get IASP status! Try STRTCPSVR *SSHD on the $vsi VSI. Aborting..."
+		else
+			iasp_name=$(ssh qsecofr@$vsi_ip 'ls -l / | grep " IASP"' | awk {'print $9'})
+			if [[ $iasp_name == "" ]]
+			then
+				echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't have IASP or it is Varied OFF" >> $log_file
+			else
+				echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi IASP Name: $iasp_name" >> $log_file
+			fi
+		fi
+	else
+		echo "`date +%Y-%m-%d_%H:%M:%S` - Running in test mode, skipping get_IASP_name." >> $log_file
+	fi
 }
 ####  END:FUNCTION - Get IASP name  ####
 
@@ -302,7 +307,7 @@ case $1 in
    -a | -ta)
 	if [ $# -lt 5 ]
 	then
-		abort "`date +%Y-%m-%d_%H:%M:%S` - Arguments Missing!! Syntax: bluexport $1 VSI_NAME IMAGE_NAME EXPORT_LOCATION [daily|monthly]"
+		abort "`date +%Y-%m-%d_%H:%M:%S` - Arguments Missing!! Syntax: bluexport $1 VSI_NAME IMAGE_NAME EXPORT_LOCATION [daily|monthly|single]"
 	fi
 	if [[ $5 == "daily" ]]
 	then
@@ -314,7 +319,7 @@ case $1 in
 	then
 		single=1
 	else
-		abort "`date +%Y-%m-%d_%H:%M:%S` - Reocurrence must be daily or monthly!"
+		abort "`date +%Y-%m-%d_%H:%M:%S` - Reocurrence must be daily or monthly or single!"
 	fi
 	if [[ $1 == "-ta" ]]
 	then
@@ -339,7 +344,7 @@ case $1 in
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Export Destination: $destination" >> $log_file
 	if [[ $destination == "both" ]] || [[ $destination == "image-catalog" ]] || [[ $destination == "cloud-storage" ]]
 	then
-		echo "`date +%Y-%m-%d_%H:%M:%S` - Export Destination $destination is valid!" >> $log_file
+		echo "`date +%Y-%m-%d_%H:%M:%S` - Export Destination $destination is valid." >> $log_file
 	else
 		abort "`date +%Y-%m-%d_%H:%M:%S` - Export Destination $destination is NOT valid!"
 	fi
@@ -349,7 +354,7 @@ case $1 in
    -x | -tx)
 	if [ $# -lt 6 ]
 	then
-		abort "`date +%Y-%m-%d_%H:%M:%S` - Arguments Missing!! Syntax: bluexport $1 EXCLUDE_NAME VSI_NAME IMAGE_NAME EXPORT_LOCATION"
+		abort "`date +%Y-%m-%d_%H:%M:%S` - Arguments Missing!! Syntax: bluexport $1 EXCLUDE_NAME VSI_NAME IMAGE_NAME EXPORT_LOCATION [daily|monthly|single]"
 	fi
 	if [[ $6 == "daily" ]]
 	then
@@ -361,7 +366,7 @@ case $1 in
 	then
 		single=1
 	else
-		abort "`date +%Y-%m-%d_%H:%M:%S` - Reocurrence must be daily or monthly!"
+		abort "`date +%Y-%m-%d_%H:%M:%S` - Reocurrence must be daily or monthly or single!"
 	fi
 	if [[ $1 == "-tx" ]]
 	then
@@ -425,28 +430,28 @@ echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes Name Captured: $volumes_name" >> $log_
 ####  END: Get Volumes to capture  ####
 
 ####  START: Flush ASPs and IASP Memory to Disk  ####
-#if [ $test -eq 0 ]
-#then
-#	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
-#	ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)"' >> $log_file
-#	if [[ $iasp_name != "" ]]
-#	then
-#		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
-#		ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV('$iasp_name') OPTION(*FRCWRT)"' >> $log_file
-#	fi
-#else
-#	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
-#	if [[ $iasp_name != "" ]]
-#	then
-#		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
-#	fi
-#fi
+if [ $test -eq 0 ]
+then
+	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
+	ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)"' >> $log_file
+	if [[ $iasp_name != "" ]]
+	then
+		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
+		ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV('$iasp_name') OPTION(*FRCWRT)"' >> $log_file
+	fi
+else
+	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
+	if [[ $iasp_name != "" ]]
+	then
+		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
+	fi
+fi
 ####  END: Flush ASPs and IASP Memory to Disk  ####
 
 ####  START: Make the Capture and Export  ####
 if [[ $destination == "image-catalog" ]]
 then
-	echo "`date +%Y-%m-%d_%H:%M:%S` - == Executing Capture and Export Cloud command... ==" >> $log_file
+	echo "`date +%Y-%m-%d_%H:%M:%S` - == Executing Capture to image catalog cloud command... ==" >> $log_file
 	if [ $test -eq 1 ]
 	then
 		echo "/usr/local/bin/ibmcloud pi ins cap cr $vsi_id --destination $destination --name $capture_name --volumes \"$volumes\"" >> $log_file
@@ -455,7 +460,7 @@ then
 		/usr/local/bin/ibmcloud pi ins cap cr $vsi_id --destination $destination --name $capture_name --volumes "$volumes" 2>> $log_file | tee -a $log_file $job_id
 	fi
 else
-	echo "`date +%Y-%m-%d_%H:%M:%S` - == Executing Capture and Export Cloud command... ==" >> $log_file
+	echo "`date +%Y-%m-%d_%H:%M:%S` - == Executing Capture and Export cloud command... ==" >> $log_file
 	if [ $test -eq 1 ]
 	then
 		echo "/usr/local/bin/ibmcloud pi ins cap cr $vsi_id --destination $destination --name $capture_name --volumes \"$volumes\" --access-key $accesskey --secret-key $secretkey --region $region --image-path $bucket" >> $log_file
