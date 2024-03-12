@@ -1,0 +1,13 @@
+#powervs_workplaces:
+#  - name: workplace1
+#    vsis: ["my_ibm_vsi", "another_vsi"]
+#    ips: ["192.168.1.1", "192.168.1.2"]
+#  - name: workplace2
+#    vsis: ["third_vsi", "fourth_vsi"]
+#    ips: ["192.168.2.1", "192.168.2.2"]
+# vars.yaml
+ibmcloud_api_key: "a-ZLRxWlb0e0FjTNg4Ecwt1WK1z_qOoSi9SdigYUI81N"
+vsi_name: "NAMPRD"
+base_image_name: "my_image_base_name"
+destination_option: ["image_catalog", "cloud_storage"]
+volumes_name_to_exclude: ["ASP2", "IASP"]

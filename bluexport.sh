@@ -29,6 +29,7 @@ vsi_list_tmp="$HOME/bluex_vsi_list.tmp"
 volumes_file="$HOME/bluex_volumes_file.tmp"
 end_log_file='==== END ========= $timestamp ========='
 single=0
+vsi_user=$(cat $bluexscrt | grep "VSI_USER" | awk {'print $2'})
 ####  END: Constants Definition  #####
 
 ####  START: Check if Config File exists  ####
@@ -201,12 +202,12 @@ get_IASP_name() {
 		else
 			abort "`date +%Y-%m-%d_%H:%M:%S` - Cannot ping VSI $vsi ! Aborting..."
 		fi
-		ssh -q qsecofr@$vsi_ip exit
+		ssh -q $vsi_user@$vsi_ip exit
 		if [ $? -eq 255 ]
 		then
 			abort "`date +%Y-%m-%d_%H:%M:%S` - Unable to SSH to $vsi and not able to get IASP status! Try STRTCPSVR *SSHD on the $vsi VSI. Aborting..."
 		else
-			iasp_name=$(ssh qsecofr@$vsi_ip 'ls -l / | grep " IASP"' | awk {'print $9'})
+			iasp_name=$(ssh $vsi_user@$vsi_ip 'ls -l / | grep " IASP"' | awk {'print $9'})
 			if [[ $iasp_name == "" ]]
 			then
 				echo "`date +%Y-%m-%d_%H:%M:%S` - VSI $vsi doesn't have IASP or it is Varied OFF" >> $log_file
@@ -433,11 +434,11 @@ echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes Name Captured: $volumes_name" >> $log_
 if [ $test -eq 0 ]
 then
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
-	ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)"' >> $log_file
+	ssh -T $vsi_user@$vsi_ip 'system "CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)"' >> $log_file
 	if [[ $iasp_name != "" ]]
 	then
 		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
-		ssh -T qsecofr@$vsi_ip 'system "CHGASPACT ASPDEV('$iasp_name') OPTION(*FRCWRT)"' >> $log_file
+		ssh -T $vsi_user@$vsi_ip 'system "CHGASPACT ASPDEV('$iasp_name') OPTION(*FRCWRT)"' >> $log_file
 	fi
 else
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
