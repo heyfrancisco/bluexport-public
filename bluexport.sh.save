@@ -2,9 +2,9 @@
 #
 # Usage:    ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | weekly | monthly | single]
 #
-# Example:  ./bluexport.sh -a vsiprd vsiprd_img image-catalog daily ---- Includes all Volumes and exports to COS and image catalog
-# Example:  ./bluexport.sh -x ASP2_ vsiprd vsiprd_img both monthly    ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS
-# Example:  ./bluexport.sh -x "ASP2_ IASPname" vsiprd vsiprd_img both monthly    ---- Excludes Volumes with ASP2_ and IASPname in the name and exports to image catalog and COS
+# Example:  ./bluexport.sh -a namdr namdr_img image-catalog daily ---- Includes all Volumes and exports to COS and image catalog
+# Example:  ./bluexport.sh -x ASP2_ namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS
+# Example:  ./bluexport.sh -x "ASP2_ IASPNA" namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ and IASPNA in the name and exports to image catalog and COS
 #
 # Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog
 #
@@ -14,7 +14,7 @@
        #####  START:CODE  #####
 
 ####  START: Constants Definition  #####
-Version=1.9.1
+Version=1.9.0
 bluexscrt="$HOME/bluexscrt"
 log_file="$HOME/bluexport.log"
 capture_time=`date +%Y-%m-%d_%H%M`
@@ -74,12 +74,12 @@ help() {
 	echo ""
 	echo "Usage: ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | weekly | monthly | single]"
 	echo ""
-	echo "Example:  ./bluexport.sh -a vsiprd vsiprd_img image-catalog daily ---- Includes all Volumes and exports to COS and image catalog"
-	echo "Example:  ./bluexport.sh -x ASP2_ vsiprd vsiprd_img both monthly    ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS"
-	echo "Example:  ./bluexport.sh -x ""ASP2_ IASPname"" vsiprd vsiprd_img both monthly    ---- Excludes Volumes with ASP2_ and IASPname in the name and exports to image catalog and COS"
+	echo "Example:  ./bluexport.sh -a namdr namdr_img image-catalog daily ---- Includes all Volumes and exports to COS and image catalog"
+	echo "Example:  ./bluexport.sh -x ASP2_ namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS"
+	echo "Example:  ./bluexport.sh -x ""ASP2_ IASPNA"" namdr namdr_img both monthly    ---- Excludes Volumes with ASP2_ and IASPNA in the name and exports to image catalog and COS"
 	echo ""
 	echo "Flag t before a or x makes it a test and do not makes the capture"
-	echo "Example:  ./bluexport.sh -tx ASP2_ vsiprd vsiprd_img both monthly ---- Do not makes the export"
+	echo "Example:  ./bluexport.sh -tx ASP2_ namdr namdr_img both monthly ---- Do not makes the export"
 	echo ""
 	echo "Ricardo Martins - Blue Chip Portugal © 2023-2024"
 	echo ""
@@ -95,11 +95,11 @@ abort() {
 }
 #### END:FUNCTION - Finish log file when aborting  ####
 
-#### START:FUNCTION - Check if image-catalog and Cloud Object has images from last time and deleted it ####
+#### START:FUNCTION - Check if image-catalog has images from last time and deleted it ####
 delete_previous_img() {
-	img_id_old=$(/usr/local/bin/ibmcloud pi img ls | grep $vsi | grep $old_img | awk {'print $1'})
-	img_name_old=$(/usr/local/bin/ibmcloud pi img ls | grep $vsi | grep $old_img | awk {'print $2'})
-	objstg_img=$(/usr/local/bin/ibmcloud cos list-objects-v2 --bucket $bucket | grep $vsi | grep $old_img | awk {'print $1'})
+	img_id_old=$(/usr/local/bin/ibmcloud pi img ls --long | grep $vsi | grep $old_img | awk {'print $1'})
+	img_name_old=$(/usr/local/bin/ibmcloud pi img ls --long | grep $vsi | grep $old_img | awk {'print $2'})
+	obj_stg_img=$(/usr/local/bin/ibmcloud cos list-objects-v2 --bucket $bucket | grep $old_img | awk {'print $1'})
 	if [ ! $img_id_old ]
 	then
 		echo "There is no Image from $old_img - Nothing to delete in image catalog." >> $log_file
@@ -107,12 +107,13 @@ delete_previous_img() {
 		echo "== Deleting from image catalog image name $img_name_old - image ID $img_id_old - from day $old_img... ==" >> $log_file
 		sh -c '/usr/local/bin/ibmcloud pi img del '$img_id_old 2>> $log_file
 	fi
-	if [ ! $objstg_img ]
+	if [ ! $obj_stg_img ]
 	then
-		echo "No image from previous week to delete in Object Storage." >> $log_file
+		echo "There is no Image from $old_img - Nothing to delete in Object Storage - Bucket $bucket." >> $log_file
 	else
-		echo "== Deleting from Bucket $bucket, image name $objstg_img from day $old_img... ==" >> $log_file
-#		sh -c '/usr/local/bin/ibmcloud cos object-delete --bucket '$bucket' --key '$objstg_img' --force' 2>> $log_file
+		echo "== Deleting from object storage - Bucket $bucket - image name $obj_stg_img - from day $old_img... ==" >> $log_file
+		sh -c '/usr/local/bin/ibmcloud cos object-delete --bucket '$bucket' --key '$obj_stg_img' --force' 2>> $log_file
+		#ic cos object-delete --bucket captures-fra --key $old_img --force
 	fi
 }
 #### END:FUNCTION - Check if image-catalog as images from last saturday and deleted it ####
