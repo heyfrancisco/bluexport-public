@@ -1,10 +1,13 @@
 # bluexport
-Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog.
+Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog.  
+
+<h6>This script was made in GNU bash, version 5.1.16(1)-release.</h6>  
+
 #
  Usage:    <h6>./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | weekly | monthly | single]</h6>
 
- Examples:  <h6>./bluexport.sh -a vsi_name capture_img_name image-catalog daily  *---- Excludes Volumes with ASP2_ in the name and exports to image catalog.*</h6>
-   <h6>./bluexport.sh -x ASP2_ vsi_name capture_img_name both monthly  ---- Includes all Volumes and exports to COS and image catalog.</h6>  
+ Examples:  <h6>./bluexport.sh -a vsi_name capture_img_name image-catalog daily  ---- Includes all Volumes and exports to image catalog, and deletes yesterday image if exists.</h6>
+   <h6>./bluexport.sh -x ASP2_ vsi_name capture_img_name both monthly  ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS, and deletes last month images if exists.</h6>  
 
  <h5>Flag t before a or x makes it a test and do not makes the capture</h5>  
  <h5>Example:</h5>  <h6>./bluexport.sh -tx "ASP2_ IASP" vsi_name capture_img_name both monthly ---- Do not makes the export, and makes log in a different log file.</h6>  
@@ -47,12 +50,12 @@ SSHKEYPATH /sshkeypath/.ssh/key
 
 bluexscrt example:
 ```
-APYKEY blaBLAblaBLA  
-WSMADDR crn:v1:bluemix:public:power-iaas:blablablablabla::  
-WSMADPRD crn:v1:bluemix:public:power-iaas:blablablablabla::
-WSFRADR crn:v1:bluemix:public:power-iaas:blablablablabla::
-ACCESSKEY blaBLAblaBLA  
-SECRETKEY blaBLAblaBLAbla  
+APYKEY bla123BLA321bla345BLA  
+WSMADDR crn:v1:bluemix:public:power-iaas:bla123bla321bla345bla123bla::  
+WSMADPRD crn:v1:bluemix:public:power-iaas:bla123bla312bla345bla123bla::
+WSFRADR crn:v1:bluemix:public:power-iaas:bla123bla312bla543bla123bla::
+ACCESSKEY bla123BLAblaBLA  
+SECRETKEY bla123BLAblaBLAbla  
 BUCKETNAME mybucket  
 REGION eu-de  
   
