@@ -134,7 +134,7 @@ job_monitor() {
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Job log in file $job_log" >> $log_file
 	if [ $flagj -eq 1 ]
 	then
-		job=$(sh -c '/usr/local/bin/ibmcloud pi job ls | grep -B7 '$capture_name' | grep "Job ID" | awk {'\''print $3'\''}' 2>> $log_file | tee -a $log_file)
+		job=$(sh -c '/usr/local/bin/ibmcloud pi job ls | grep -B7 '$capture_name' | grep "Job ID" | awk {'\''print $3'\''}' 2>> $log_file)
 	else
 		job=$(cat $job_id | grep "Job ID " | awk {'print $3'})
 	fi
@@ -142,7 +142,7 @@ job_monitor() {
 	echo "Job Monitoring of VM Capture "$capture_name" - Job ID:" $job >> $job_log
 	while true
 	do
-		sh -c '/usr/local/bin/ibmcloud pi job get '$job 1> $job_monitor 2>>$job_log | tee -a $log_file
+		sh -c '/usr/local/bin/ibmcloud pi job get '$job 1> $job_monitor 2>>$job_log
 		job_status=$(cat $job_monitor | grep "State " | awk {'print $2'})
 		message=$(cat $job_monitor |grep "Message" | cut -f 2- -d ' ')
 		operation=$(cat $job_monitor |grep "Message" | cut -f 2- -d ' '| sed 's/::/ /g' | awk {'print $3'})
@@ -449,11 +449,11 @@ echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes Name Captured: $volumes_name" >> $log_
 if [ $test -eq 0 ]
 then
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file
-	ssh -T -i $sshkeypath $vsi_user@$vsi_ip 'system "CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)"' >> $log_file | tee -a $log_file
+	ssh -T -i $sshkeypath $vsi_user@$vsi_ip 'system "CHGASPACT ASPDEV(*SYSBAS) OPTION(*FRCWRT)"' >> $log_file
 	if [[ $iasp_name != "" ]]
 	then
 		echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for $iasp_name ..." >> $log_file
-		ssh -T -i $sshkeypath $vsi_user@$vsi_ip 'system "CHGASPACT ASPDEV('$iasp_name') OPTION(*FRCWRT)"' >> $log_file | tee -a $log_file
+		ssh -T -i $sshkeypath $vsi_user@$vsi_ip 'system "CHGASPACT ASPDEV('$iasp_name') OPTION(*FRCWRT)"' >> $log_file
 	fi
 else
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Flushing Memory to Disk for SYSBAS..." >> $log_file

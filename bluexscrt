@@ -15,3 +15,7 @@ SERVERN XXX.XXX.XXX.XXX
 
 ALLWS POWERVSDR POWERVSPRD
 WSNAMES <Power VS Workspace Name:Power VS Workspace Name:Power VS Workspace Name>
+
+VSI_USER vsi_user
+
+SSHKEYPATH /home/USER/.ssh/bluexport_rsa

@@ -1,13 +1,14 @@
 # bluexport
 Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog.
 #
- Usage:    <h6>./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | monthly | single]</h6>
+ Usage:    <h6>./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | weekly | monthly | single]</h6>
 
- Examples:  <h6>./bluexport.sh -a namdr namdr_img image-catalog daily  *---- Excludes Volumes with ASP2_ in the name and exports to image catalog.*</h6>
-   <h6>./bluexport.sh -x ASP2_ namdr namdr_img both monthly  ---- Includes all Volumes and exports to COS and image catalog.</h6>  
+ Examples:  <h6>./bluexport.sh -a vsi_name capture_img_name image-catalog daily  *---- Excludes Volumes with ASP2_ in the name and exports to image catalog.*</h6>
+   <h6>./bluexport.sh -x ASP2_ vsi_name capture_img_name both monthly  ---- Includes all Volumes and exports to COS and image catalog.</h6>  
 
  <h5>Flag t before a or x makes it a test and do not makes the capture</h5>  
- <h5>Example:</h5>  <h6>./bluexport.sh -tx ASP2_ namdr namdr_img both monthly ---- Do not makes the export and register in a different log file.</h6>  
+ <h5>Example:</h5>  <h6>./bluexport.sh -tx "ASP2_ IASP" vsi_name capture_img_name both monthly ---- Do not makes the export, and makes log in a different log file.</h6>  
+ <h6>[daily | weekly | monthly | single] - This parameter allows the script to delete the image from the previous capture. i.e. If weekly is selected it will try to delete the image from the week before.</h6>
  
  *This file is to be run in crontab or in background, it will not have many or none output to screen, it will log in a file.*  
   
@@ -35,6 +36,11 @@ SERVERN XXX.XXX.XXX.XXX <SERVERN_VSI_ID>
 
 ALLWS POWERVSDR POWERVSPRD                                                         - The shortnames in this line...
 WSNAMES <Power VS Workspace Name:Power VS Workspace Name:Power VS Workspace Name>  - ...and the long names in this line must be in the same order
+
+VSI_USER vsi_user
+
+SSHKEYPATH /sshkeypath/.ssh/key
+
 ```
 
 bluexscrt example:
@@ -53,6 +59,11 @@ SERVER2 192.168.111.112 abcdefgh-1234-1a2b-1234-abc123def123
 
 ALLWS WSMADDR WSMADPRD WSFRADR
 WSNAMES Power VS Workspace Mad DR:Power VS Workspace Mad PRD:Power VS Workspace Fra DR
+
+VSI_USER bluexport
+
+SSHKEYPATH /home/USER/.ssh/bluexport_rsa
+
 ```
 
 #
