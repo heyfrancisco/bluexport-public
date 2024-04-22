@@ -14,7 +14,7 @@
        #####  START:CODE  #####
 
 ####  START: Constants Definition  #####
-Version=1.9.2
+Version=1.9.3
 bluexscrt="$HOME/bluexscrt"
 log_file="$HOME/bluexport.log"
 capture_time=`date +%Y-%m-%d_%H%M`
