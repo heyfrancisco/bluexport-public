@@ -64,7 +64,7 @@ WSNAMES Power VS Workspace Mad DR:Power VS Workspace Mad PRD:Power VS Workspace 
 
 VSI_USER bluexport
 
-SSHKEYPATH /home/USER/.ssh/bluexport_rsa
+SSHKEYPATH /home/<USER>/.ssh/bluexport_rsa
 
 ```
 
