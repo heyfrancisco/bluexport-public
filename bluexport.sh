@@ -105,20 +105,20 @@ delete_previous_img() {
 	today_img=$(/usr/local/bin/ibmcloud cos list-objects-v2 --bucket $bucket | grep $vsi | grep $capture_date | awk {'print $1'})
 	if [ ! $img_id_old ]
 	then
-		echo "There is no Image from $old_img - Nothing to delete in image catalog." >> $log_file
+		echo "`date +%Y-%m-%d_%H:%M:%S` - There is no Image from $old_img - Nothing to delete in image catalog." >> $log_file
 	else
-		echo "== Deleting from image catalog image name $img_name_old - image ID $img_id_old - from day $old_img... ==" >> $log_file
+		echo "`date +%Y-%m-%d_%H:%M:%S` - == Deleting from image catalog image name $img_name_old - image ID $img_id_old - from day $old_img... ==" >> $log_file
 		sh -c '/usr/local/bin/ibmcloud pi img del '$img_id_old 2>> $log_file | tee -a $log_file
 	fi
 	if [ ! $objstg_img ]
 	then
-		echo "No image from previous export to delete in Object Storage." >> $log_file
+		echo "`date +%Y-%m-%d_%H:%M:%S` - No image from previous export to delete in Object Storage." >> $log_file
 	else
 		if [ ! $today_img ]
 		then
-			echo "== Something went wrong... Today's image is not in Bucket $bucket. Keeping ( Not deleted ) image name $objstg_img from day $old_img... ==" >> $log_file
+			echo "`date +%Y-%m-%d_%H:%M:%S` - == Something went wrong... Today's image is not in Bucket $bucket. Keeping ( Not deleted ) image name $objstg_img from day $old_img... ==" >> $log_file
 		else
-			echo "== Deleting from Bucket $bucket, image name $objstg_img from day $old_img... ==" >> $log_file
+			echo "`date +%Y-%m-%d_%H:%M:%S` - == Deleting from Bucket $bucket, image name $objstg_img from day $old_img... ==" >> $log_file
 			sh -c '/usr/local/bin/ibmcloud cos object-delete --bucket '$bucket' --key '$objstg_img' --force' 2>> $log_file | tee -a $log_file
 		fi
 	fi
