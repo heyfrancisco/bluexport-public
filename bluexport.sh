@@ -116,7 +116,7 @@ delete_previous_img() {
 	else
 		if [ ! $today_img ]
 		then
-			echo "== Something went wrong, today's image is not in Bucket $bucket. Keeping ( Not deleted ) image name $objstg_img from day $old_img... ==" >> $log_file
+			echo "== Something went wrong... Today's image is not in Bucket $bucket. Keeping ( Not deleted ) image name $objstg_img from day $old_img... ==" >> $log_file
 		else
 			echo "== Deleting from Bucket $bucket, image name $objstg_img from day $old_img... ==" >> $log_file
 			sh -c '/usr/local/bin/ibmcloud cos object-delete --bucket '$bucket' --key '$objstg_img' --force' 2>> $log_file | tee -a $log_file
