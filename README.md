@@ -20,7 +20,7 @@ Content of file bluexscrt before edit:
 
 ```
 APYKEY <REPLACE-ALL-THIS-WITH-YOUR-API-KEY>  
-POWERVSDR <REPLACE-ALL-THIS-WITH-YOUR-POWER-VIRTUAL-SERVER-CRN-i.e.   crn:v1:bluemix:public:power-iaas:blablablablabla::>  
+WSFRADR <REPLACE-ALL-THIS-WITH-YOUR-POWER-VIRTUAL-SERVER-CRN-i.e.   crn:v1:bluemix:public:power-iaas:blablablablabla::>  
 POWERVSPRD <REPLACE-ALL-THIS-WITH-YOUR-POWER-VIRTUAL-SERVER-CRN-i.e.  crn:v1:bluemix:public:power-iaas:blablablablabla::>  
 ACCESSKEY <REPLACE-ALL-THIS-WITH-YOUR-ACCES-KEY>  
 SECRETKEY <REPLACE-ALL-THIS-WITH-YOUR-SECRET-KEY>  
@@ -34,7 +34,7 @@ SERVER3 XXX.XXX.XXX.XXX <SERVER3_VSI_ID>
 .  
 SERVERN XXX.XXX.XXX.XXX <SERVERN_VSI_ID>
 
-ALLWS POWERVSDR POWERVSPRD                                                         - The shortnames in this line...
+ALLWS WSFRADR POWERVSPRD                                                           - The shortnames in this line...
 WSNAMES <Power VS Workspace Name:Power VS Workspace Name:Power VS Workspace Name>  - ...and the long names in this line must be in the same order
 
 VSI_USER vsi_user
