@@ -438,7 +438,7 @@ cloud_login
 check_VSI_exists
 
 ####  START: Get Volumes to capture  ####
-eval $volumes_cmd > $volumes_file
+eval $volumes_cmd > $volumes_file | tee -a $log_file
 volumes=$(cat $volumes_file | awk {'print $1'} | tr '\n' ',' | sed 's/,$//')
 volumes_name=$(cat $volumes_file | awk {'print $2'} | tr '\n' ' ')
 echo "`date +%Y-%m-%d_%H:%M:%S` - Volumes ID Captured: $volumes" >> $log_file
