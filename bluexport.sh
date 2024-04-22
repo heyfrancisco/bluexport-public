@@ -18,6 +18,7 @@ Version=1.9.4
 bluexscrt="$HOME/bluexscrt"
 log_file="$HOME/bluexport.log"
 capture_time=`date +%Y-%m-%d_%H%M`
+capture_date=`date +%Y-%m-%d`
 flagj=0
 job_log="$HOME/bluex_job.log"
 job_test_log="$HOME/bluex_job_test.log"
@@ -101,6 +102,7 @@ delete_previous_img() {
 	img_id_old=$(/usr/local/bin/ibmcloud pi img ls | grep $vsi | grep $old_img | awk {'print $1'})
 	img_name_old=$(/usr/local/bin/ibmcloud pi img ls | grep $vsi | grep $old_img | awk {'print $2'})
 	objstg_img=$(/usr/local/bin/ibmcloud cos list-objects-v2 --bucket $bucket | grep $vsi | grep $old_img | awk {'print $1'})
+	today_img=$(/usr/local/bin/ibmcloud cos list-objects-v2 --bucket $bucket | grep $vsi | grep $capture_date | awk {'print $1'})
 	if [ ! $img_id_old ]
 	then
 		echo "There is no Image from $old_img - Nothing to delete in image catalog." >> $log_file
@@ -110,10 +112,15 @@ delete_previous_img() {
 	fi
 	if [ ! $objstg_img ]
 	then
-		echo "No image from previous week to delete in Object Storage." >> $log_file
+		echo "No image from previous export to delete in Object Storage." >> $log_file
 	else
-		echo "== Deleting from Bucket $bucket, image name $objstg_img from day $old_img... ==" >> $log_file
-		sh -c '/usr/local/bin/ibmcloud cos object-delete --bucket '$bucket' --key '$objstg_img' --force' 2>> $log_file | tee -a $log_file
+		if [ ! $today_img ]
+		then
+			echo "== Something went wrong, today's image is not in Bucket $bucket. Keeping ( Not deleted ) image name $objstg_img from day $old_img... ==" >> $log_file
+		else
+			echo "== Deleting from Bucket $bucket, image name $objstg_img from day $old_img... ==" >> $log_file
+			sh -c '/usr/local/bin/ibmcloud cos object-delete --bucket '$bucket' --key '$objstg_img' --force' 2>> $log_file | tee -a $log_file
+		fi
 	fi
 }
 #### END:FUNCTION - Check if image-catalog as images from last saturday and deleted it ####
