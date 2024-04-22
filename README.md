@@ -22,6 +22,8 @@ Content of file bluexscrt before edit:
 APYKEY <REPLACE-ALL-THIS-WITH-YOUR-API-KEY>  
 WSFRADR <REPLACE-ALL-THIS-WITH-YOUR-POWER-VIRTUAL-SERVER-CRN-i.e.   crn:v1:bluemix:public:power-iaas:blablablablabla::>  
 POWERVSPRD <REPLACE-ALL-THIS-WITH-YOUR-POWER-VIRTUAL-SERVER-CRN-i.e.  crn:v1:bluemix:public:power-iaas:blablablablabla::>  
+WSFRAPRD <REPLACE-ALL-THIS-WITH-YOUR-POWER-VIRTUAL-SERVER-CRN-i.e.  crn:v1:bluemix:public:power-iaas:blablablablabla::>  
+  
 ACCESSKEY <REPLACE-ALL-THIS-WITH-YOUR-ACCES-KEY>  
 SECRETKEY <REPLACE-ALL-THIS-WITH-YOUR-SECRET-KEY>  
 BUCKETNAME <REPLACE-ALL-THIS-WITH-YOUR-BUCKET-NAME>  
@@ -34,8 +36,8 @@ SERVER3 XXX.XXX.XXX.XXX <SERVER3_VSI_ID>
 .  
 SERVERN XXX.XXX.XXX.XXX <SERVERN_VSI_ID>
 
-ALLWS WSFRADR POWERVSPRD                                                           - The shortnames in this line...
-WSNAMES <Power VS Workspace Name:Power VS Workspace Name:Power VS Workspace Name>  - ...and the long names in this line must be in the same order
+ALLWS WSFRADR POWERVSPRD WSFRAPRD                                                                                                   - The shortnames in this line...
+WSNAMES <Power VS Workspace Name of the WSFRADR:Power VS Workspace Name of the POWERVSPRD:Power VS Workspace Name of the WSFRAPRD>  - ...and the long names in this line must be in the same order
 
 VSI_USER vsi_user
 
