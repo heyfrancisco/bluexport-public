@@ -1,10 +1,12 @@
 #!/bin/bash
 #
-# Usage:    ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | weekly | monthly | single]
+# Usage:    ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [hourly | daily | weekly | monthly | single]
 #
 # Example:  ./bluexport.sh -a vsiprd vsiprd_img image-catalog daily            ---- Includes all Volumes and exports to COS and image catalog
 # Example:  ./bluexport.sh -x ASP2_ vsiprd vsiprd_img both monthly             ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS
 # Example:  ./bluexport.sh -x "ASP2_ IASPname" vsiprd vsiprd_img both monthly  ---- Excludes Volumes with ASP2_ and IASPname in the name and exports to image catalog and COS
+#
+# Note: Reocurrence "hourly" only permits captures to image-catalog
 #
 # Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog
 #
@@ -19,6 +21,7 @@ bluexscrt="$HOME/bluexscrt"
 log_file="$HOME/bluexport.log"
 capture_time=`date +%Y-%m-%d_%H%M`
 capture_date=`date +%Y-%m-%d`
+capture_hour=`date "+%H"`
 flagj=0
 job_log="$HOME/bluex_job.log"
 job_test_log="$HOME/bluex_job_test.log"
@@ -74,7 +77,7 @@ help() {
 	echo ""
 	echo "Capture IBM Cloud POWERVS VSI and Export to COS or/and Image Catalog"
 	echo ""
-	echo "Usage: ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [daily | weekly | monthly | single]"
+	echo "Usage: ./bluexport.sh [ -a | -x volumes_name_to_exclude ] [VSI_Name_to_Capture] [Capture_Image_Name] [both|image-catalog|cloud-storage] [hourly | daily | weekly | monthly | single]"
 	echo ""
 	echo "Example:  ./bluexport.sh -a vsiprd vsiprd_img image-catalog daily ---- Includes all Volumes and exports to COS and image catalog"
 	echo "Example:  ./bluexport.sh -x ASP2_ vsiprd vsiprd_img both monthly    ---- Excludes Volumes with ASP2_ in the name and exports to image catalog and COS"
@@ -326,7 +329,18 @@ case $1 in
 	then
 		abort "`date +%Y-%m-%d_%H:%M:%S` - Arguments Missing!! Syntax: bluexport $1 VSI_NAME IMAGE_NAME EXPORT_LOCATION [daily|weekly|monthly|single]"
 	fi
-	if [[ $5 == "daily" ]]
+	destination=$4
+	capture_img_name=${3^^}
+	capture_name=$capture_img_name"_"$capture_time
+	if [[ $5 == "hourly" ]]
+	then
+		if [[ $destination == "both" ]] || [[ $destination == "cloud-storage" ]]
+		then
+			abort "`date +%Y-%m-%d_%H:%M:%S` - Destination $destination is not valid with hourly parameter!! Only image-catalog is possible."
+		fi
+		old_img=$(date --date '1 hour ago' "+_%H")
+		capture_name=$capture_img_name"_"$capture_hour
+	elif [[ $5 == "daily" ]]
 	then
 		old_img=$(date --date '1 day ago' "+%Y-%m-%d")
 	elif [[ $5 == "weekly" ]]
@@ -357,10 +371,7 @@ case $1 in
 	vsi=${2^^}
 	vsi_id=`cat $bluexscrt | grep $vsi | awk {'print $3'}`
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Starting Capture&Export for VSI Name: $vsi ..." >> $log_file
-	capture_img_name=${3^^}
-	capture_name=$capture_img_name"_"$capture_time
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Capture Name: $capture_name" >> $log_file
-	destination=$4
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Export Destination: $destination" >> $log_file
 	if [[ $destination == "both" ]] || [[ $destination == "image-catalog" ]] || [[ $destination == "cloud-storage" ]]
 	then
@@ -376,6 +387,16 @@ case $1 in
 	then
 		abort "`date +%Y-%m-%d_%H:%M:%S` - Arguments Missing!! Syntax: bluexport $1 EXCLUDE_NAME VSI_NAME IMAGE_NAME EXPORT_LOCATION [daily|weekly|monthly|single]"
 	fi
+	capture_img_name=${4^^}
+	capture_name=$capture_img_name"_"$capture_time
+	if [[ $6 == "hourly" ]]
+	then
+		if [[ $destination == "both" ]] || [[ $destination == "cloud-storage" ]]
+		then
+			abort "`date +%Y-%m-%d_%H:%M:%S` - Destination $destination is not valid with hourly parameter!! Only image-catalog is possible."
+		fi
+		old_img=$(date --date '1 hour ago' "+%H")
+		capture_name=$capture_img_name"_"$capture_hour
 	if [[ $6 == "daily" ]]
 	then
 		old_img=$(date --date '1 day ago' "+%Y-%m-%d")
@@ -414,8 +435,6 @@ case $1 in
 	vsi=${3^^}
 	vsi_id=`cat $bluexscrt | grep $vsi | awk {'print $3'}`
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Starting Capture&Export for VSI Name: $vsi ..." >> $log_file
-	capture_img_name=${4^^}
-	capture_name=$capture_img_name"_"$capture_time
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Capture Name: $capture_name" >> $log_file
 	destination=$5
 	echo "`date +%Y-%m-%d_%H:%M:%S` - Export Destination: $destination" >> $log_file
